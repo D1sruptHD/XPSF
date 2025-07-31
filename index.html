@@ -132,3 +132,271 @@
   </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>XPSF</title>
+  <link rel="icon" href="favico.ico" type="image/x-icon"/>
+  <style>
+    body {
+      background-color: #000;
+      color: #0f0;
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 2rem;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+    }
+
+    #xp-bar {
+      width: 100%;
+      max-width: 400px;
+      height: 24px;
+      background-color: #222;
+      border: 2px solid #0f0;
+      margin: 1rem 0;
+      position: relative;
+    }
+
+    #xp-fill {
+      height: 100%;
+      background-color: #0f0;
+      width: 0%;
+    }
+
+    button {
+      background-color: #0f0;
+      color: #000;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      margin: 0.5rem;
+      font-size: 1rem;
+      font-family: monospace;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background-color: #0a0;
+    }
+
+    .stats {
+      margin: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>XPSF: Infinite</h1>
+  <div class="stats" id="level">Level: 1</div>
+  <div class="stats" id="xp">XP: 0 / 200</div>
+  <div class="stats" id="xp-left">XP Left: 200</div>
+  <div class="stats" id="multiplier">Multiplier: 1x</div>
+  <div id="xp-bar"><div id="xp-fill"></div></div>
+  <button onclick="fight()">Fight</button>
+  <button onclick="upgrade()">Upgrade (Cost: 2 Levels)</button>
+
+  <script>
+    let xp = 0;
+    let level = 1;
+    let baseXP = 200;
+    let multiplier = 1;
+
+    // Load saved progress
+    window.onload = () => {
+      const saved = JSON.parse(localStorage.getItem('xpsf-data'));
+      if (saved) {
+        xp = saved.xp;
+        level = saved.level;
+        baseXP = saved.baseXP;
+        multiplier = saved.multiplier;
+      }
+      updateUI();
+    };
+
+    function fight() {
+      xp += 10 * multiplier;
+      checkLevelUp();
+      saveProgress();
+      updateUI();
+    }
+
+    function upgrade() {
+      if (level >= 3) { // prevent going below 1
+        level -= 2;
+        multiplier += 1;
+        saveProgress();
+        updateUI();
+      } else {
+        alert("You need at least 2 levels to upgrade!");
+      }
+    }
+
+    function checkLevelUp() {
+      const threshold = level * baseXP;
+      while (xp >= threshold) {
+        xp -= threshold;
+        level++;
+      }
+    }
+
+    function saveProgress() {
+      localStorage.setItem('xpsf-data', JSON.stringify({
+        xp, level, baseXP, multiplier
+      }));
+    }
+
+    function updateUI() {
+      const threshold = level * baseXP;
+      document.getElementById("level").textContent = `Level: ${level}`;
+      document.getElementById("xp").textContent = `XP: ${xp} / ${threshold}`;
+      document.getElementById("xp-left").textContent = `XP Left: ${threshold - xp}`;
+      document.getElementById("multiplier").textContent = `Multiplier: ${multiplier}x`;
+      const percent = Math.min((xp / threshold) * 100, 100);
+      document.getElementById("xp-fill").style.width = percent + "%";
+    }
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>XPSF</title>
+  <link rel="icon" href="favico.ico" type="image/x-icon"/>
+  <style>
+    body {
+      background-color: #000;
+      color: #0f0;
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 2rem;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+    }
+
+    #xp-bar {
+      width: 100%;
+      max-width: 400px;
+      height: 24px;
+      background-color: #222;
+      border: 2px solid #0f0;
+      margin: 1rem 0;
+      position: relative;
+    }
+
+    #xp-fill {
+      height: 100%;
+      background-color: #0f0;
+      width: 0%;
+    }
+
+    button {
+      background-color: #0f0;
+      color: #000;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      margin: 0.5rem;
+      font-size: 1rem;
+      font-family: monospace;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background-color: #0a0;
+    }
+
+    .stats {
+      margin: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>XPSF: Infinite</h1>
+  <div class="stats" id="level">Level: 1</div>
+  <div class="stats" id="xp">XP: 0 / 200</div>
+  <div class="stats" id="xp-left">XP Left: 200</div>
+  <div class="stats" id="multiplier">Multiplier: 1x</div>
+  <div id="xp-bar"><div id="xp-fill"></div></div>
+  <button onclick="fight()">Fight</button>
+  <button onclick="upgrade()">Upgrade (Cost: 2 Levels)</button>
+
+  <script>
+    let xp = 0;
+    let level = 1;
+    let baseXP = 200;
+    let multiplier = 1;
+
+    // Load saved progress
+    window.onload = () => {
+      const saved = JSON.parse(localStorage.getItem('xpsf-data'));
+      if (saved) {
+        xp = saved.xp;
+        level = saved.level;
+        baseXP = saved.baseXP;
+        multiplier = saved.multiplier;
+      }
+      updateUI();
+    };
+
+    function fight() {
+      xp += 10 * multiplier;
+      checkLevelUp();
+      saveProgress();
+      updateUI();
+    }
+
+    function upgrade() {
+      if (level >= 3) { // prevent going below 1
+        level -= 2;
+        multiplier += 1;
+        saveProgress();
+        updateUI();
+      } else {
+        alert("You need at least 2 levels to upgrade!");
+      }
+    }
+
+    function checkLevelUp() {
+      const threshold = level * baseXP;
+      while (xp >= threshold) {
+        xp -= threshold;
+        level++;
+      }
+    }
+
+    function saveProgress() {
+      localStorage.setItem('xpsf-data', JSON.stringify({
+        xp, level, baseXP, multiplier
+      }));
+    }
+
+    function updateUI() {
+      const threshold = level * baseXP;
+      document.getElementById("level").textContent = `Level: ${level}`;
+      document.getElementById("xp").textContent = `XP: ${xp} / ${threshold}`;
+      document.getElementById("xp-left").textContent = `XP Left: ${threshold - xp}`;
+      document.getElementById("multiplier").textContent = `Multiplier: ${multiplier}x`;
+      const percent = Math.min((xp / threshold) * 100, 100);
+      document.getElementById("xp-fill").style.width = percent + "%";
+    }
+  </script>
+</body>
+</html>
