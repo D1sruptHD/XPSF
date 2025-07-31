@@ -161,6 +161,8 @@
       if (level >= 3) {
         level -= 2;
         multiplier++;
+        const baseXP = getBaseXP(level);
+        if (xp > baseXP) xp = baseXP; // Prevent negative XP Left
         saveGame();
         updateUI();
       } else {
