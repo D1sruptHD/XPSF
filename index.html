@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>XPSF</title>
-  <link rel="icon" href="favico.ico" type="image/x-icon"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>XPSF: Infinite</title>
+  <link rel="icon" href="favico.ico" type="image/x-icon" />
   <style>
     body {
-      background-color: #000;
-      color: #0f0;
+      background-color: black;
+      color: #00ff00;
       font-family: monospace;
       display: flex;
       flex-direction: column;
@@ -17,118 +17,172 @@
       padding: 2rem;
       height: 100vh;
       margin: 0;
+      position: relative;
+    }
+
+    /* Small top-left Clear Data button */
+    #clearDataBtn {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background-color: #330000;
+      border: 1.5px solid #00ff00;
+      color: #00ff00;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.3s ease, background-color 0.3s ease;
+      user-select: none;
+      z-index: 9999;
+      font-family: monospace;
+    }
+
+    #clearDataBtn:hover {
+      background-color: #550000;
+      opacity: 1;
     }
 
     h1 {
       margin-bottom: 1rem;
     }
 
+    .stat {
+      margin: 0.5rem 0;
+      font-size: 1.2rem;
+    }
+
     #xp-bar {
-      width: 100%;
+      width: 80%;
       max-width: 400px;
-      height: 24px;
-      background-color: #222;
-      border: 2px solid #0f0;
-      margin: 1rem 0;
-      position: relative;
+      height: 30px;
+      background: #003300;
+      border: 2px solid #00ff00;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      overflow: hidden;
     }
 
     #xp-fill {
       height: 100%;
-      background-color: #0f0;
+      background: #00ff00;
       width: 0%;
+      transition: width 0.3s ease;
+      border-radius: 12px 0 0 12px;
     }
 
     button {
-      background-color: #0f0;
-      color: #000;
-      border: none;
-      padding: 0.6rem 1.2rem;
-      margin: 0.5rem;
+      background-color: #001100;
+      color: #00ff00;
+      border: 2px solid #00ff00;
+      border-radius: 12px;
+      padding: 12px 24px;
       font-size: 1rem;
       font-family: monospace;
       cursor: pointer;
-      transition: all 0.2s;
+      margin: 0.5rem 0.75rem;
+      transition: background-color 0.3s ease;
+      user-select: none;
     }
 
     button:hover {
-      background-color: #0a0;
+      background-color: #002200;
     }
 
-    .stats {
-      margin: 0.5rem;
+    #buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 15px;
     }
   </style>
 </head>
 <body>
+  <button id="clearDataBtn" title="Clear Save Data">CLEAR DATA</button>
+
   <h1>XPSF: Infinite</h1>
-  <div class="stats" id="level">Level: 1</div>
-  <div class="stats" id="xp">XP: 0 / 200</div>
-  <div class="stats" id="xp-left">XP Left: 200</div>
-  <div class="stats" id="multiplier">Multiplier: 1x</div>
+
+  <div class="stat" id="levelDisplay">Level: 1</div>
+  <div class="stat" id="xpDisplay">XP: 0 / 200</div>
+  <div class="stat" id="xpLeftDisplay">XP Left: 200</div>
   <div id="xp-bar"><div id="xp-fill"></div></div>
-  <button onclick="fight()">Fight</button>
-  <button onclick="upgrade()">Upgrade (Cost: 2 Levels)</button>
+  <div class="stat" id="upgradeDisplay">Multiplier: 1x</div>
+
+  <div id="buttons">
+    <button id="fightBtn">FIGHT</button>
+    <button id="upgradeBtn">Upgrade (Cost: 2 Levels)</button>
+  </div>
 
   <script>
-    let xp = 0;
-    let level = 1;
-    let baseXP = 200;
-    let multiplier = 1;
+    // Load saved data or defaults
+    let xp = parseFloat(localStorage.getItem('xpsf-xp')) || 0;
+    let level = parseInt(localStorage.getItem('xpsf-level')) || 1;
+    let multiplier = parseInt(localStorage.getItem('xpsf-multiplier')) || 1;
 
-    // Load saved progress
-    window.onload = () => {
-      const saved = JSON.parse(localStorage.getItem('xpsf-data'));
-      if (saved) {
-        xp = saved.xp;
-        level = saved.level;
-        baseXP = saved.baseXP;
-        multiplier = saved.multiplier;
-      }
-      updateUI();
-    };
+    function getBaseXP(level) {
+      return 200 + (level - 1) * 25;
+    }
+
+    function saveGame() {
+      localStorage.setItem('xpsf-xp', xp);
+      localStorage.setItem('xpsf-level', level);
+      localStorage.setItem('xpsf-multiplier', multiplier);
+    }
+
+    function updateUI() {
+      const baseXP = getBaseXP(level);
+      document.getElementById('levelDisplay').textContent = `Level: ${level}`;
+      document.getElementById('xpDisplay').textContent = `XP: ${Math.floor(xp)} / ${baseXP}`;
+      document.getElementById('xpLeftDisplay').textContent = `XP Left: ${Math.max(0, Math.floor(baseXP - xp))}`;
+      document.getElementById('upgradeDisplay').textContent = `Multiplier: ${multiplier}x`;
+      const xpPercent = Math.min((xp / baseXP) * 100, 100);
+      document.getElementById('xp-fill').style.width = `${xpPercent}%`;
+    }
 
     function fight() {
-      xp += 10 * multiplier;
-      checkLevelUp();
-      saveProgress();
+      const baseXP = getBaseXP(level);
+      const xpGains = [20, 25, 30, 35, 40, 45, 50];
+      const baseGain = xpGains[Math.floor(Math.random() * xpGains.length)];
+      const gained = baseGain * multiplier;
+      xp += gained;
+
+      while (xp >= baseXP) {
+        xp -= baseXP;
+        level++;
+      }
+
+      saveGame();
       updateUI();
     }
 
     function upgrade() {
-      if (level >= 3) { // prevent going below 1
+      if (level >= 3) {
         level -= 2;
-        multiplier += 1;
-        saveProgress();
+        multiplier++;
+        saveGame();
         updateUI();
       } else {
-        alert("You need at least 2 levels to upgrade!");
+        alert('Need at least 3 levels to upgrade!');
       }
     }
 
-    function checkLevelUp() {
-      const threshold = level * baseXP;
-      while (xp >= threshold) {
-        xp -= threshold;
-        level++;
+    function clearData() {
+      if (confirm("This will delete ALL your progress. Are you sure?")) {
+        localStorage.clear();
+        xp = 0;
+        level = 1;
+        multiplier = 1;
+        updateUI();
       }
     }
 
-    function saveProgress() {
-      localStorage.setItem('xpsf-data', JSON.stringify({
-        xp, level, baseXP, multiplier
-      }));
-    }
+    document.getElementById('fightBtn').addEventListener('click', fight);
+    document.getElementById('upgradeBtn').addEventListener('click', upgrade);
+    document.getElementById('clearDataBtn').addEventListener('click', clearData);
 
-    function updateUI() {
-      const threshold = level * baseXP;
-      document.getElementById("level").textContent = `Level: ${level}`;
-      document.getElementById("xp").textContent = `XP: ${xp} / ${threshold}`;
-      document.getElementById("xp-left").textContent = `XP Left: ${threshold - xp}`;
-      document.getElementById("multiplier").textContent = `Multiplier: ${multiplier}x`;
-      const percent = Math.min((xp / threshold) * 100, 100);
-      document.getElementById("xp-fill").style.width = percent + "%";
-    }
+    updateUI();
   </script>
 </body>
 </html>
