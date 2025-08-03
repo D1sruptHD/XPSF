@@ -6,9 +6,19 @@
   <title>XPSF: Infinite</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <style>
+    :root {
+      /* Default green/black theme */
+      --bg-color: black;
+      --text-color: #00ff00;
+      --accent-color: #00ff00;
+      --secondary-bg: #003300;
+      --button-bg: #330000;
+      --button-hover-bg: #550000;
+    }
+
     body {
-      background-color: black;
-      color: #00ff00;
+      background-color: var(--bg-color);
+      color: var(--text-color);
       font-family: monospace;
       display: flex;
       flex-direction: column;
@@ -19,15 +29,46 @@
       margin: 0;
       position: relative;
     }
-
+    
+    /* Color Palette Selector */
+    .palette-selector {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 9999;
+      font-family: monospace;
+    }
+    
+    .palette-selector label {
+      color: var(--text-color);
+      font-size: 0.8rem;
+      margin-right: 8px;
+    }
+    
+    .palette-selector select {
+      background-color: var(--button-bg);
+      color: var(--text-color);
+      border: 1px solid var(--accent-color);
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-family: monospace;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+    
+    .palette-selector select:focus {
+      outline: 2px solid var(--accent-color);
+      outline-offset: 2px;
+    }
+    
     /* Small top-left Clear Data button */
     #clearDataBtn {
       position: fixed;
       top: 10px;
       left: 10px;
-      background-color: #330000;
-      border: 1.5px solid #00ff00;
-      color: #00ff00;
+      background-color: var(--button-bg);
+      border: 1.5px solid var(--accent-color);
+      color: var(--text-color);
       border-radius: 8px;
       padding: 6px 10px;
       font-size: 0.75rem;
@@ -38,125 +79,196 @@
       z-index: 9999;
       font-family: monospace;
     }
-
+    
     #clearDataBtn:hover {
-      background-color: #550000;
+      background-color: var(--button-hover-bg);
       opacity: 1;
     }
-
+    
     h1 {
       margin-bottom: 1rem;
     }
-
+    
     .stat {
       margin: 0.5rem 0;
       font-size: 1.2rem;
     }
-
+    
     #xp-bar {
       width: 80%;
       max-width: 400px;
       height: 30px;
-      background: #003300;
-      border: 2px solid #00ff00;
+      background: var(--secondary-bg);
+      border: 2px solid var(--accent-color);
       border-radius: 12px;
-      margin-bottom: 10px;
+      position: relative;
+      margin: 1rem 0;
       overflow: hidden;
     }
-
+    
     #xp-fill {
       height: 100%;
-      background: #00ff00;
+      background: var(--accent-color);
       width: 0%;
-      transition: width 0.3s ease;
-      border-radius: 12px 0 0 12px;
+      transition: width 0.5s ease;
+      border-radius: 10px;
     }
-
+    
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    
     button {
-      background-color: #001100;
-      color: #00ff00;
-      border: 2px solid #00ff00;
-      border-radius: 12px;
+      background-color: var(--button-bg);
+      border: 2px solid var(--accent-color);
+      color: var(--text-color);
+      border-radius: 10px;
       padding: 12px 24px;
       font-size: 1rem;
-      font-family: monospace;
       cursor: pointer;
-      margin: 0.5rem 0.75rem;
-      transition: background-color 0.3s ease;
+      transition: background-color 0.3s ease, transform 0.1s ease;
       user-select: none;
+      font-family: monospace;
     }
-
+    
     button:hover {
-      background-color: #002200;
+      background-color: var(--button-hover-bg);
     }
-
-    #buttons {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 15px;
+    
+    button:active {
+      transform: scale(0.95);
+    }
+    
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
   </style>
 </head>
 <body>
-  <button id="clearDataBtn" title="Clear Save Data">CLEAR DATA</button>
+  <!-- Color Palette Selector -->
+  <div class="palette-selector">
+    <label for="colorPalette">Theme:</label>
+    <select id="colorPalette" onchange="changeColorPalette(this.value)">
+      <option value="default">Default (Green/Black)</option>
+      <option value="blue-yellow">Blue/Yellow</option>
+      <option value="white-black">White/Black</option>
+      <option value="high-contrast">High Contrast</option>
+    </select>
+  </div>
+
+  <!-- Clear Data Button -->
+  <button id="clearDataBtn">Clear Data</button>
 
   <h1>XPSF: Infinite</h1>
-
+  
   <div class="stat" id="levelDisplay">Level: 1</div>
-  <div class="stat" id="xpDisplay">XP: 0 / 200</div>
-  <div class="stat" id="xpLeftDisplay">XP Left: 200</div>
-  <div id="xp-bar"><div id="xp-fill"></div></div>
+  <div class="stat" id="xpDisplay">XP: 0 / 100</div>
+  <div class="stat" id="xpLeftDisplay">XP Left: 100</div>
   <div class="stat" id="upgradeDisplay">Multiplier: 1x</div>
-
-  <div id="buttons">
-    <button id="fightBtn">FIGHT</button>
+  
+  <div id="xp-bar">
+    <div id="xp-fill"></div>
+  </div>
+  
+  <div class="button-group">
+    <button id="fightBtn">Fight</button>
     <button id="upgradeBtn">Upgrade (Cost: 2 Levels)</button>
   </div>
 
   <script>
-    // Load saved data or defaults
-    let xp = parseFloat(localStorage.getItem('xpsf-xp')) || 0;
+    let xp = parseInt(localStorage.getItem('xpsf-xp')) || 0;
     let level = parseInt(localStorage.getItem('xpsf-level')) || 1;
     let multiplier = parseInt(localStorage.getItem('xpsf-multiplier')) || 1;
-
+    
+    // Load saved color palette
+    const savedPalette = localStorage.getItem('xpsf-color-palette') || 'default';
+    document.getElementById('colorPalette').value = savedPalette;
+    changeColorPalette(savedPalette);
+    
     function getBaseXP(level) {
-      return 200 + (level - 1) * 25;
+      return 100 + (level - 1) * 50;
     }
-
+    
     function saveGame() {
       localStorage.setItem('xpsf-xp', xp);
       localStorage.setItem('xpsf-level', level);
       localStorage.setItem('xpsf-multiplier', multiplier);
     }
-
+    
+    function changeColorPalette(palette) {
+      const root = document.documentElement;
+      
+      switch(palette) {
+        case 'blue-yellow':
+          root.style.setProperty('--bg-color', '#000080');
+          root.style.setProperty('--text-color', '#FFFF00');
+          root.style.setProperty('--accent-color', '#FFFF00');
+          root.style.setProperty('--secondary-bg', '#000040');
+          root.style.setProperty('--button-bg', '#000060');
+          root.style.setProperty('--button-hover-bg', '#0000A0');
+          break;
+        case 'white-black':
+          root.style.setProperty('--bg-color', 'white');
+          root.style.setProperty('--text-color', 'black');
+          root.style.setProperty('--accent-color', '#333333');
+          root.style.setProperty('--secondary-bg', '#F0F0F0');
+          root.style.setProperty('--button-bg', '#E0E0E0');
+          root.style.setProperty('--button-hover-bg', '#D0D0D0');
+          break;
+        case 'high-contrast':
+          root.style.setProperty('--bg-color', 'black');
+          root.style.setProperty('--text-color', 'white');
+          root.style.setProperty('--accent-color', 'white');
+          root.style.setProperty('--secondary-bg', '#333333');
+          root.style.setProperty('--button-bg', '#666666');
+          root.style.setProperty('--button-hover-bg', '#888888');
+          break;
+        case 'default':
+        default:
+          root.style.setProperty('--bg-color', 'black');
+          root.style.setProperty('--text-color', '#00ff00');
+          root.style.setProperty('--accent-color', '#00ff00');
+          root.style.setProperty('--secondary-bg', '#003300');
+          root.style.setProperty('--button-bg', '#330000');
+          root.style.setProperty('--button-hover-bg', '#550000');
+          break;
+      }
+      
+      // Save palette preference
+      localStorage.setItem('xpsf-color-palette', palette);
+    }
+    
     function updateUI() {
       const baseXP = getBaseXP(level);
       document.getElementById('levelDisplay').textContent = `Level: ${level}`;
       document.getElementById('xpDisplay').textContent = `XP: ${Math.floor(xp)} / ${baseXP}`;
       document.getElementById('xpLeftDisplay').textContent = `XP Left: ${Math.max(0, Math.floor(baseXP - xp))}`;
       document.getElementById('upgradeDisplay').textContent = `Multiplier: ${multiplier}x`;
+      
       const xpPercent = Math.min((xp / baseXP) * 100, 100);
       document.getElementById('xp-fill').style.width = `${xpPercent}%`;
     }
-
+    
     function fight() {
       const baseXP = getBaseXP(level);
       const xpGains = [20, 25, 30, 35, 40, 45, 50];
       const baseGain = xpGains[Math.floor(Math.random() * xpGains.length)];
       const gained = baseGain * multiplier;
+      
       xp += gained;
-
+      
       while (xp >= baseXP) {
         xp -= baseXP;
         level++;
       }
-
+      
       saveGame();
       updateUI();
     }
-
+    
     function upgrade() {
       if (level >= 3) {
         level -= 2;
@@ -169,21 +281,24 @@
         alert('Need at least 3 levels to upgrade!');
       }
     }
-
+    
     function clearData() {
       if (confirm("This will delete ALL your progress. Are you sure?")) {
         localStorage.clear();
         xp = 0;
         level = 1;
         multiplier = 1;
+        // Reset to default palette
+        document.getElementById('colorPalette').value = 'default';
+        changeColorPalette('default');
         updateUI();
       }
     }
-
+    
     document.getElementById('fightBtn').addEventListener('click', fight);
     document.getElementById('upgradeBtn').addEventListener('click', upgrade);
     document.getElementById('clearDataBtn').addEventListener('click', clearData);
-
+    
     updateUI();
   </script>
 </body>
