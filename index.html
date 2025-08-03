@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -115,35 +115,34 @@
       display: none;
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       z-index: 10000;
-      background: rgba(0,0,0,0.85);
+      background: rgba(0,0,0,0.88);
       align-items: center; justify-content: center; flex-direction: column;
       cursor: none;
     }
-    /* Centered minigame style */
     #pandGameBox {
-      position: relative;
-      width: 300px;
-      height: 300px;
-      margin-bottom: 36px;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      pointer-events: none;
+      z-index: 2;
     }
     #pandCenterRing {
-      position: absolute;
-      left: 50px; top: 50px;
-      width: 200px; height: 200px;
+      position: fixed;
       border: 5px solid #ff3366;
       border-radius: 50%;
-      box-sizing: border-box;
-      z-index: 10;
+      pointer-events: none;
+      z-index: 3;
+      /* dynamic position/size via JS */
     }
     #pandCursorBall {
-      position: absolute;
+      position: fixed;
       width: 40px; height: 40px;
       border-radius: 50%;
       background: #12e56c;
       box-shadow: 0 0 18px #fff;
       border: 2.5px solid #fff;
-      z-index: 30;
+      z-index: 4;
       pointer-events: none;
+      /* dynamic position via JS */
     }
     #pandBarContainer {
       margin-top: 20px;
@@ -151,6 +150,7 @@
       border: 2px solid #FFF;
       border-radius: 13px;
       overflow: hidden;
+      z-index: 10;
     }
     #pandBar {
       height: 100%;
@@ -158,7 +158,7 @@
       background: #12e56c;
       transition: width 0.1s;
     }
-    #pandStatus { color: #FFF; margin-top: 12px; font-size: 1.1rem; }
+    #pandStatus { color: #FFF; margin-top: 12px; font-size: 1.1rem; z-index: 11;}
     #pandStartBtn {
       margin-top: 32px;
       font-family: monospace;
@@ -169,6 +169,7 @@
       background: #181818;
       color: #fff;
       cursor: pointer;
+      z-index: 11;
     }
   </style>
 </head>
@@ -195,7 +196,7 @@
     <button id="fightBtn">Fight</button>
     <button id="upgradeBtn">Upgrade (Cost: 2 Levels)</button>
   </div>
-  <!-- Pandemonium FPS minigame overlay -->
+  <!-- Pandemonium FPS minigame overlay covering the entire screen -->
   <div id="pandemoniumOverlay">
     <div id="pandGameBox">
       <div id="pandCenterRing"></div>
@@ -342,18 +343,19 @@
     document.getElementById('clearDataBtn').addEventListener('click', clearData);
     updateUI();
 
-    // --------- Pandemonium: FPS Pointer-Lock Ball Minigame (shake, audio, small ring, 42s) ---------
-    let pandBarVal = 1, pandBarDrain = 0.017, pandBarFill = 0.027, pandDuration = 42, pandElapsed = 0, pandInterval = null, pandThrowInterval = null, shakeloop = null;
-    let ballX = 150, ballY = 150, shakeTime = 0, shakePhaseX = Math.random()*100, shakePhaseY = Math.random()*100;
-    const ballRadius = 20, ringRadius = 80;
+    // --------- Pandemonium: Fullscreen Ball Minigame (dynamic play area) ---------
+    let pandBarVal = 1, pandBarDrain = 0.017, pandBarFill = 0.027, pandDuration = 42, pandElapsed = 0;
+    let pandInterval = null, pandThrowInterval = null, shakeloop = null;
+    let ballX = 0, ballY = 0, shakeTime = 0, shakePhaseX = Math.random()*100, shakePhaseY = Math.random()*100;
     let pandActive = false;
+    const ballRadius = 20, ringRadius = 80; // center ring 160px diameter
 
     function triggerPandemonium() {
       pandActive = true; pandBarVal = 1; pandElapsed = 0;
-      ballX = 150; ballY = 150;
+      centerRing();
+      centerBall();
       document.getElementById('pandemoniumOverlay').style.display = 'flex';
-      document.getElementById('pandCursorBall').style.left = (ballX-ballRadius) + 'px';
-      document.getElementById('pandCursorBall').style.top = (ballY-ballRadius) + 'px';
+      updateBall();
       document.getElementById('pandStatus').textContent = 'Keep the jittery ball inside the SMALL ring!';
       document.getElementById('pandStartBtn').style.display = 'block';
       document.getElementById('pandStartBtn').onclick = function() {
@@ -362,13 +364,30 @@
         gameBox.requestPointerLock = gameBox.requestPointerLock || gameBox.mozRequestPointerLock;
         gameBox.requestPointerLock();
       };
+      window.addEventListener("resize", centerRing);
     }
+
     document.addEventListener('pointerlockchange', pointerLockChange, false);
     document.addEventListener('mozpointerlockchange', pointerLockChange, false);
+
     function pointerLockChange() {
       let locked = document.pointerLockElement === document.getElementById('pandGameBox') ||
           document.mozPointerLockElement === document.getElementById('pandGameBox');
       if (locked && pandActive) startPandemoniumCore();
+    }
+    function centerRing() {
+      // Always keep ring centered
+      const cx = window.innerWidth/2, cy = window.innerHeight/2, d = ringRadius*2;
+      let ring = document.getElementById('pandCenterRing');
+      ring.style.width = d+'px';
+      ring.style.height = d+'px';
+      ring.style.left = (cx - ringRadius)+'px';
+      ring.style.top  = (cy - ringRadius)+'px';
+    }
+    function centerBall() {
+      // Start in center of screen
+      ballX = window.innerWidth/2;
+      ballY = window.innerHeight/2;
     }
     function startPandemoniumCore() {
       document.body.style.cursor = 'none';
@@ -377,22 +396,20 @@
       pandThrowInterval = setInterval(pandThrowBall, 5000);
       pandInterval = setInterval(pandBallTick, 40);
       window.addEventListener("mousemove", moveBallByMouse, false);
-
       // Play minigame audio on a user gesture
       let a = document.getElementById('pandAudio');
       a.currentTime = 0;
-      a.play().catch(()=>{}); // fail silently if blocked
+      a.play().catch(()=>{});
     }
     function endPandemoniumCore(win) {
       clearInterval(pandInterval); clearInterval(pandThrowInterval); cancelAnimationFrame(shakeloop);
       window.removeEventListener("mousemove", moveBallByMouse);
+      window.removeEventListener("resize", centerRing);
       document.body.style.cursor = '';
       document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock;
       try { document.exitPointerLock(); } catch(e) {}
-
       // Stop/rewind audio
       let a = document.getElementById('pandAudio'); a.pause(); a.currentTime = 0;
-
       let status = document.getElementById('pandStatus');
       if (win) status.textContent = 'You survived Pandemonium! Click to continue.';
       else status.textContent = 'You failed! Click to try again.';
@@ -407,20 +424,28 @@
       if (!pandActive) return;
       ballX += e.movementX;
       ballY += e.movementY;
-      ballX = Math.max(ballRadius+10, Math.min(300-ballRadius-10, ballX));
-      ballY = Math.max(ballRadius+10, Math.min(300-ballRadius-10, ballY));
+      // Ball must stay fully onscreen
+      ballX = Math.max(ballRadius, Math.min(window.innerWidth-ballRadius, ballX));
+      ballY = Math.max(ballRadius, Math.min(window.innerHeight-ballRadius, ballY));
+    }
+    function updateBall() {
+      let el = document.getElementById('pandCursorBall');
+      el.style.left = (ballX-ballRadius) + 'px';
+      el.style.top = (ballY-ballRadius) + 'px';
     }
     function ballSmoothShake() {
       shakeTime += 0.04;
       let maxShake = 5;
       let shakeX = Math.sin(shakePhaseX + shakeTime*0.8)*maxShake + Math.sin(shakePhaseY + shakeTime*1.3)*maxShake*0.6;
       let shakeY = Math.cos(shakePhaseY + shakeTime*0.85)*maxShake + Math.cos(shakePhaseX + shakeTime*1.11)*maxShake*0.5;
-      document.getElementById('pandCursorBall').style.left = (ballX-ballRadius+shakeX) + 'px';
-      document.getElementById('pandCursorBall').style.top = (ballY-ballRadius+shakeY) + 'px';
+      let el = document.getElementById('pandCursorBall');
+      el.style.left = (ballX-ballRadius+shakeX)+'px';
+      el.style.top = (ballY-ballRadius+shakeY)+'px';
       if (pandActive) shakeloop = requestAnimationFrame(ballSmoothShake);
     }
     function pandBallTick() {
-      let dx = ballX-150, dy = ballY-150;
+      // Is the ball center within the ring (centered in window)?
+      let dx = ballX - window.innerWidth/2, dy = ballY - window.innerHeight/2;
       let inRing = Math.sqrt(dx*dx+dy*dy) <= ringRadius;
       if (inRing) {
         pandBarVal = Math.min(1, pandBarVal + pandBarFill);
@@ -433,25 +458,21 @@
       if (pandBarVal <= 0) endPandemoniumCore(false);
     }
     function pandThrowBall() {
-    // Random position at least 50px away from center, but within the play area
-      const centerX = 150, centerY = 150;
-      let minDist = 50;
-      let maxDist = 140; // leave some room from the edge (300/2 - ballRadius - 10)
-      let angle = Math.random() * Math.PI * 2;
-      let r = minDist + Math.random() * (maxDist - minDist);
-
-      // Convert polar to cartesian
-      let tryX = centerX + Math.cos(angle)*r;
-      let tryY = centerY + Math.sin(angle)*r;
-
-      // Clamp to bounds (ball can't leave the play area!)
-      tryX = Math.max(ballRadius+10, Math.min(300-ballRadius-10, tryX));
-      tryY = Math.max(ballRadius+10, Math.min(300-ballRadius-10, tryY));
-
+      // Knock anywhere onscreen (at least 50px from center, inside bounds)
+      let cx = window.innerWidth/2, cy = window.innerHeight/2;
+      let minDist = ringRadius + 50, // always outside the ring
+          maxDist = Math.min(cx, cy) - ballRadius - 10;
+      if (maxDist < minDist+1) maxDist = minDist+1;
+      let angle = Math.random()*Math.PI*2;
+      let r = minDist + Math.random() * (maxDist-minDist);
+      let tryX = cx + Math.cos(angle)*r;
+      let tryY = cy + Math.sin(angle)*r;
+      // Clamp to window bounds
+      tryX = Math.max(ballRadius, Math.min(window.innerWidth-ballRadius, tryX));
+      tryY = Math.max(ballRadius, Math.min(window.innerHeight-ballRadius, tryY));
       ballX = tryX;
       ballY = tryY;
     }
-
   </script>
 </body>
 </html>
