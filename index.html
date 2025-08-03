@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -433,10 +433,25 @@
       if (pandBarVal <= 0) endPandemoniumCore(false);
     }
     function pandThrowBall() {
-      let angle = Math.random()*Math.PI*2, r = 63 + Math.random()*11;
-      ballX = 150 + Math.cos(angle)*r;
-      ballY = 150 + Math.sin(angle)*r;
+    // Random position at least 50px away from center, but within the play area
+      const centerX = 150, centerY = 150;
+      let minDist = 50;
+      let maxDist = 140; // leave some room from the edge (300/2 - ballRadius - 10)
+      let angle = Math.random() * Math.PI * 2;
+      let r = minDist + Math.random() * (maxDist - minDist);
+
+      // Convert polar to cartesian
+      let tryX = centerX + Math.cos(angle)*r;
+      let tryY = centerY + Math.sin(angle)*r;
+
+      // Clamp to bounds (ball can't leave the play area!)
+      tryX = Math.max(ballRadius+10, Math.min(300-ballRadius-10, tryX));
+      tryY = Math.max(ballRadius+10, Math.min(300-ballRadius-10, tryY));
+
+      ballX = tryX;
+      ballY = tryY;
     }
+
   </script>
 </body>
 </html>
