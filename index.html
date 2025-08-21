@@ -7,207 +7,108 @@
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <style>
     :root {
-      --bg-color: black;
-      --text-color: #00ff00;
-      --accent-color: #00ff00;
-      --secondary-bg: #003300;
-      --button-bg: #330000;
-      --button-hover-bg: #550000;
+      --bg: black; --txt: #0f0; --acc: #0f0; --sec: #030; --btn: #300; --hover: #500;
     }
+    * { box-sizing: border-box; }
     body {
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      font-family: monospace;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 2rem;
-      height: 100vh;
-      margin: 0;
-      position: relative;
+      background: var(--bg); color: var(--txt); font-family: monospace; margin: 0;
+      display: flex; flex-direction: column; align-items: center; padding: 2rem;
+      height: 100vh; position: relative;
     }
-    .palette-selector {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      z-index: 9999;
-      font-family: monospace;
-    }
-    .language-selector {
-      position: fixed;
-      top: 50px;
-      right: 10px;
-      z-index: 9999;
-      font-family: monospace;
-    }
+    .fixed { position: fixed; z-index: 9999; font-family: monospace; }
+    .palette-selector { top: 10px; right: 10px; }
+    .language-selector { top: 50px; right: 10px; }
     .palette-selector label, .language-selector label {
-      color: var(--text-color);
-      font-size: 0.8rem;
-      margin-right: 8px;
+      color: var(--txt); font-size: 0.8rem; margin-right: 8px;
     }
     .palette-selector select, .language-selector select {
-      background-color: var(--button-bg);
-      color: var(--text-color);
-      border: 1px solid var(--accent-color);
-      border-radius: 4px;
-      padding: 4px 8px;
-      font-family: monospace;
-      font-size: 0.75rem;
-      cursor: pointer;
-    }
-    .palette-selector select:focus, .language-selector select:focus {
-      outline: 2px solid var(--accent-color);
-      outline-offset: 2px;
+      background: var(--btn); color: var(--txt); border: 1px solid var(--acc);
+      border-radius: 4px; padding: 4px 8px; font: inherit; font-size: 0.75rem; cursor: pointer;
     }
     #clearDataBtn {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      background-color: var(--button-bg);
-      border: 1.5px solid var(--accent-color);
-      color: var(--text-color);
-      border-radius: 8px;
-      padding: 6px 10px;
-      font-size: 0.75rem;
-      cursor: pointer;
-      opacity: 0.6;
-      transition: opacity 0.3s ease, background-color 0.3s ease;
-      user-select: none;
-      z-index: 9999;
-      font-family: monospace;
+      top: 10px; left: 10px; background: var(--btn); border: 1.5px solid var(--acc);
+      color: var(--txt); border-radius: 8px; padding: 6px 10px; font-size: 0.75rem;
+      cursor: pointer; opacity: 0.6; transition: all 0.3s; user-select: none; font: inherit;
     }
-    #clearDataBtn:hover {
-      background-color: var(--button-hover-bg);
-      opacity: 1;
-    }
-    h1 { margin-bottom: 1rem; }
+    #clearDataBtn:hover { background: var(--hover); opacity: 1; }
+    h1 { margin-bottom: 1rem; font-size: 2rem; }
     .stat { margin: 0.5rem 0; font-size: 1.2rem; }
     #xp-bar {
-      width: 80%; max-width: 400px; height: 30px;
-      background: var(--secondary-bg);
-      border: 2px solid var(--accent-color);
-      border-radius: 12px;
-      position: relative;
-      margin: 1rem 0;
-      overflow: hidden;
+      width: 80%; max-width: 400px; height: 30px; background: var(--sec);
+      border: 2px solid var(--acc); border-radius: 12px; margin: 1rem 0; overflow: hidden;
     }
     #xp-fill {
-      height: 100%;
-      background: var(--accent-color);
-      width: 0%;
-      transition: width 0.5s ease;
+      height: 100%; background: var(--acc); width: 0%; transition: width 0.3s ease;
       border-radius: 10px 0 0 10px;
     }
     #xp-fill.full { border-radius: 10px; }
     .button-group { display: flex; gap: 1rem; margin-top: 2rem; }
     button {
-      background-color: var(--button-bg);
-      border: 2px solid var(--accent-color);
-      color: var(--text-color);
-      border-radius: 10px;
-      padding: 12px 24px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background-color 0.3s ease, transform 0.1s ease;
-      user-select: none;
-      font-family: monospace;
+      background: var(--btn); border: 2px solid var(--acc); color: var(--txt);
+      border-radius: 10px; padding: 12px 24px; font: inherit; cursor: pointer;
+      transition: all 0.2s; user-select: none;
     }
-    button:hover { background-color: var(--button-hover-bg); }
+    button:hover { background: var(--hover); }
     button:active { transform: scale(0.95); }
     button:disabled { opacity: 0.6; cursor: not-allowed; }
-
+    #saveIndicator {
+      position: fixed; bottom: 10px; right: 10px; background: rgba(0,255,0,0.8);
+      color: black; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem;
+      opacity: 0; transition: opacity 0.3s; z-index: 9999; font: inherit;
+    }
+    #saveIndicator.show { opacity: 1; }
+    
+    /* Pandemonium styles */
     #pandemoniumOverlay {
-      display: none;
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      z-index: 10000;
-      background: rgba(0,0,0,0.88);
-      align-items: center; justify-content: center; flex-direction: column;
-      cursor: none;
+      display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: 10000; background: rgba(0,0,0,0.9); align-items: center; justify-content: center;
+      flex-direction: column; cursor: none;
     }
-    #pandGameBox {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      pointer-events: none;
-      z-index: 2;
-    }
-    #pandCenterRing {
-      position: fixed;
-      border: 5px solid #ff3366;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 3;
-    }
+    #pandGameBox { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 2; }
+    #pandCenterRing { position: fixed; border: 5px solid #f36; border-radius: 50%; pointer-events: none; z-index: 3; }
     #pandCursorBall {
-      position: fixed;
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      background: #12e56c;
-      box-shadow: 0 0 18px #fff;
-      border: 2.5px solid #fff;
-      z-index: 4;
-      pointer-events: none;
+      position: fixed; width: 40px; height: 40px; border-radius: 50%; background: #1e6;
+      box-shadow: 0 0 15px #fff; border: 2px solid #fff; z-index: 4; pointer-events: none;
     }
     #pandBarContainer {
-      /* dynamically positioned, so remove margin, etc. */
-      height: 28px; background: #222;
-      border: 2px solid #FFF;
-      border-radius: 13px;
-      overflow: hidden;
-      z-index: 15;
-      position: fixed;
+      height: 28px; background: #222; border: 2px solid #fff; border-radius: 13px;
+      overflow: hidden; z-index: 15; position: fixed;
     }
-    #pandBar {
-      height: 100%;
-      width: 100%;
-      background: #12e56c;
-      transition: width 0.1s;
-    }
+    #pandBar { height: 100%; background: #1e6; transition: width 0.1s; }
     #pandStatus {
-      color: #FFF;
-      font-size: 1.1rem;
-      z-index: 15;
-      position: fixed;
-      width: 400px;
-      left: 50%; transform: translateX(-50%);
-      text-align: center;
+      color: #fff; font-size: 1.1rem; z-index: 15; position: fixed; text-align: center;
     }
     #pandStartBtn {
-      margin-top: 32px;
-      font-family: monospace;
-      font-size: 1.1rem;
-      padding: 10px 30px;
-      border-radius: 8px;
-      border: 2px solid #888;
-      background: #181818;
-      color: #fff;
-      cursor: pointer;
-      z-index: 16;
+      margin-top: 32px; font: inherit; font-size: 1.1rem; padding: 10px 30px;
+      border-radius: 8px; border: 2px solid #888; background: #181818;
+      color: #fff; cursor: pointer; z-index: 16;
     }
   </style>
 </head>
 <body>
-  <!-- Color Palette Selector -->
-  <div class="palette-selector">
+  <div id="saveIndicator">Saved!</div>
+  
+  <div class="palette-selector fixed">
     <label for="colorPalette" id="themeLabel">Theme:</label>
-    <select id="colorPalette" onchange="changeColorPalette(this.value)">
-      <option value="default">Default (Green/Black)</option>
-      <option value="blue-yellow">Blue/Yellow</option>
-      <option value="white-black">White/Black</option>
-      <option value="high-contrast">High Contrast</option>
+    <select id="colorPalette">
+      <option value="default">Default</option>
+      <option value="blue">Blue/Yellow</option>
+      <option value="white">White/Black</option>
+      <option value="contrast">High Contrast</option>
     </select>
   </div>
-  <!-- Language Switcher -->
-  <div class="language-selector">
+  
+  <div class="language-selector fixed">
     <label for="languageSelect" id="langLabel">Lang:</label>
-    <select id="languageSelect" onchange="changeLanguage(this.value)">
-      <option value="en">English</option>
-      <option value="hu">Magyar</option>
-      <option value="ru">Русский</option>
+    <select id="languageSelect">
+      <option value="en">EN</option>
+      <option value="hu">HU</option>
+      <option value="ru">RU</option>
     </select>
   </div>
-  <!-- Clear Data Button -->
-  <button id="clearDataBtn">Clear Data</button>
+  
+  <button id="clearDataBtn" class="fixed">Clear</button>
+  
   <h1 id="gameTitle">XPSF: Infinite</h1>
   <div class="stat" id="levelDisplay">Level: 1</div>
   <div class="stat" id="xpDisplay">XP: 0 / 100</div>
@@ -216,9 +117,9 @@
   <div id="xp-bar"><div id="xp-fill"></div></div>
   <div class="button-group">
     <button id="fightBtn">Fight</button>
-    <button id="upgradeBtn">Upgrade (Cost: 2 Levels)</button>
+    <button id="upgradeBtn">Upgrade (2 Levels)</button>
   </div>
-  <!-- Pandemonium FPS minigame overlay covering the entire screen -->
+  
   <div id="pandemoniumOverlay">
     <div id="pandGameBox">
       <div id="pandCenterRing"></div>
@@ -226,410 +127,325 @@
     </div>
     <div id="pandBarContainer"><div id="pandBar"></div></div>
     <div id="pandStatus"></div>
-    <button id="pandStartBtn" style="display:none;">Start Minigame</button>
+    <button id="pandStartBtn" style="display:none;">Start</button>
   </div>
-  <!-- AUDIO -->
+  
   <audio id="pandAudio" src="audio.mp3" loop></audio>
+  
   <script>
-    // Language system - using variables instead of localStorage
-    let currentLanguage = 'en';
-    let gameData = {
-      xp: 0,
-      level: 1,
-      multiplier: 1,
-      colorPalette: 'default'
+    // Optimized game state
+    let game = {
+      xp: 0, level: 1, mult: 1, theme: 'default', lang: 'en'
     };
     
-    const translations = {
+    const t = {
       en: {
-        gameTitle: "XPSF: Infinite",
-        clearData: "Clear Data",
-        themeLabel: "Theme:",
-        langLabel: "Lang:",
-        level: "Level",
-        xpLeft: "XP Left",
-        multiplier: "Multiplier",
-        fight: "Fight",
-        upgrade: "Upgrade",
-        upgradeCost: "Cost: 2 Levels",
-        needLevels: "Need at least 3 levels to upgrade!",
-        confirmClear: "This will delete ALL your progress. Are you sure?",
-        pandKeepInside: "Keep the circle inside the middle.",
-        pandSurvived: "You survived Pandemonium! Click to continue.",
-        pandFailed: "You failed! Click to try again.",
-        pandStart: "Start Minigame",
-        colorDefault: "Default (Green/Black)",
-        colorBlueYellow: "Blue/Yellow",
-        colorWhiteBlack: "White/Black",
-        colorHighContrast: "High Contrast"
+        title: "XPSF: Infinite", clear: "Clear", theme: "Theme:", lang: "Lang:",
+        level: "Level", xpLeft: "XP Left", mult: "Multiplier", fight: "Fight",
+        upgrade: "Upgrade", needLevels: "Need 3+ levels!", 
+        confirmClear: "Delete ALL progress?", pandKeep: "Keep circle inside!",
+        pandWin: "Survived! Click to continue.", pandFail: "Failed! Try again."
       },
       hu: {
-        gameTitle: "XPSF: Végtelen",
-        clearData: "Adatok Törlése",
-        themeLabel: "Téma:",
-        langLabel: "Nyelv:",
-        level: "Szint",
-        xpLeft: "XP Hátra",
-        multiplier: "Szorzó",
-        fight: "Harc",
-        upgrade: "Fejlesztés",
-        upgradeCost: "Ár: 2 Szint",
-        needLevels: "Legalább 3 szint kell a fejlesztéshez!",
-        confirmClear: "Ez MINDEN haladásodat törli. Biztos vagy benne?",
-        pandKeepInside: "Tartsd a kört a középen belül.",
-        pandSurvived: "Túlélted a Pandémoniumot! Kattints a folytatáshoz.",
-        pandFailed: "Kudarcot vallottál! Kattints az újrapróbáláshoz.",
-        pandStart: "Minijáték Indítása",
-        colorDefault: "Alapértelmezett (Zöld/Fekete)",
-        colorBlueYellow: "Kék/Sárga",
-        colorWhiteBlack: "Fehér/Fekete",
-        colorHighContrast: "Nagy Kontraszt"
+        title: "XPSF: Végtelen", clear: "Törlés", theme: "Téma:", lang: "Nyelv:",
+        level: "Szint", xpLeft: "XP Hátra", mult: "Szorzó", fight: "Harc",
+        upgrade: "Fejlesztés", needLevels: "3+ szint kell!",
+        confirmClear: "MINDEN törlése?", pandKeep: "Tartsd bent a kört!",
+        pandWin: "Túléltél! Kattints.", pandFail: "Kudarc! Újra."
       },
       ru: {
-        gameTitle: "XPSF: Бесконечность",
-        clearData: "Очистить Данные",
-        themeLabel: "Тема:",
-        langLabel: "Язык:",
-        level: "Уровень",
-        xpLeft: "XP Осталось",
-        multiplier: "Множитель",
-        fight: "Бой",
-        upgrade: "Улучшение",
-        upgradeCost: "Цена: 2 Уровня",
-        needLevels: "Нужно как минимум 3 уровня для улучшения!",
-        confirmClear: "Это удалит ВСЕ ваши достижения. Вы уверены?",
-        pandKeepInside: "Держите круг в центре.",
-        pandSurvived: "Вы пережили Пандемониум! Нажмите чтобы продолжить.",
-        pandFailed: "Вы проиграли! Нажмите чтобы попробовать снова.",
-        pandStart: "Начать Мини-игру",
-        colorDefault: "По умолчанию (Зелёный/Чёрный)",
-        colorBlueYellow: "Синий/Жёлтый",
-        colorWhiteBlack: "Белый/Чёрный",
-        colorHighContrast: "Высокий Контраст"
+        title: "XPSF: Бесконечность", clear: "Очистить", theme: "Тема:", lang: "Язык:",
+        level: "Уровень", xpLeft: "XP Осталось", mult: "Множитель", fight: "Бой",
+        upgrade: "Улучшение", needLevels: "Нужно 3+ уровня!",
+        confirmClear: "Удалить ВСЁ?", pandKeep: "Держи круг внутри!",
+        pandWin: "Выжил! Клик продолжить.", pandFail: "Провал! Ещё раз."
       }
     };
 
-    function changeLanguage(lang) {
-      currentLanguage = lang;
-      updateLanguage();
-    }
+    // Optimized save/load
+    const save = () => {
+      try {
+        window.xpsfSave = JSON.stringify(game);
+        document.getElementById('saveIndicator').className = 'show';
+        setTimeout(() => document.getElementById('saveIndicator').className = '', 1000);
+      } catch(e) { console.warn('Save failed'); }
+    };
 
-    function updateLanguage() {
-      const t = translations[currentLanguage];
+    const load = () => {
+      try {
+        if (window.xpsfSave) {
+          game = {...game, ...JSON.parse(window.xpsfSave)};
+          return true;
+        }
+      } catch(e) { console.warn('Load failed'); }
+      return false;
+    };
+
+    // Theme system
+    const themes = {
+      default: ['black', '#0f0', '#0f0', '#030', '#300', '#500'],
+      blue: ['#008', '#ff0', '#ff0', '#004', '#006', '#00a'],
+      white: ['white', 'black', '#333', '#f0f0f0', '#e0e0e0', '#d0d0d0'],
+      contrast: ['black', 'white', 'white', '#333', '#666', '#888']
+    };
+
+    const setTheme = (theme) => {
+      const [bg, txt, acc, sec, btn, hover] = themes[theme] || themes.default;
+      const r = document.documentElement.style;
+      r.setProperty('--bg', bg);
+      r.setProperty('--txt', txt);
+      r.setProperty('--acc', acc);
+      r.setProperty('--sec', sec);
+      r.setProperty('--btn', btn);
+      r.setProperty('--hover', hover);
+      game.theme = theme;
+      save();
+    };
+
+    // UI updates
+    const getBaseXP = (lvl) => 100 + (lvl - 1) * 50;
+    
+    const updateUI = () => {
+      const lang = t[game.lang];
+      const baseXP = getBaseXP(game.level);
       
-      // Update static text elements
-      document.getElementById('gameTitle').textContent = t.gameTitle;
-      document.getElementById('clearDataBtn').textContent = t.clearData;
-      document.getElementById('themeLabel').textContent = t.themeLabel;
-      document.getElementById('langLabel').textContent = t.langLabel;
-      document.getElementById('fightBtn').textContent = t.fight;
+      document.getElementById('gameTitle').textContent = lang.title;
+      document.getElementById('clearDataBtn').textContent = lang.clear;
+      document.getElementById('themeLabel').textContent = lang.theme;
+      document.getElementById('langLabel').textContent = lang.lang;
       
-      // Update color palette options
-      const colorSelect = document.getElementById('colorPalette');
-      colorSelect.options[0].textContent = t.colorDefault;
-      colorSelect.options[1].textContent = t.colorBlueYellow;
-      colorSelect.options[2].textContent = t.colorWhiteBlack;
-      colorSelect.options[3].textContent = t.colorHighContrast;
+      document.getElementById('levelDisplay').textContent = `${lang.level}: ${game.level}`;
+      document.getElementById('xpDisplay').textContent = `XP: ${Math.floor(game.xp)} / ${baseXP}`;
+      document.getElementById('xpLeftDisplay').textContent = `${lang.xpLeft}: ${Math.max(0, Math.floor(baseXP - game.xp))}`;
+      document.getElementById('upgradeDisplay').textContent = `${lang.mult}: ${game.mult}x`;
+      document.getElementById('fightBtn').textContent = lang.fight;
+      document.getElementById('upgradeBtn').textContent = `${lang.upgrade} (2 Levels)`;
       
-      // Update dynamic UI
-      updateUI();
-    }
+      const pct = Math.min((game.xp / baseXP) * 100, 100);
+      const fill = document.getElementById('xp-fill');
+      fill.style.width = pct + '%';
+      fill.className = pct >= 100 ? 'full' : '';
+    };
 
-    let xp = gameData.xp;
-    let level = gameData.level;
-    let multiplier = gameData.multiplier;
-
-    document.getElementById('colorPalette').value = gameData.colorPalette;
-    changeColorPalette(gameData.colorPalette);
-
-    // Initialize language - wait for DOM to be ready
-    window.addEventListener('load', function() {
-      document.getElementById('languageSelect').value = currentLanguage;
-      updateLanguage();
-    });
-
-    function getBaseXP(level) { return 100 + (level - 1) * 50; }
-    function saveGame() {
-      gameData.xp = xp;
-      gameData.level = level;
-      gameData.multiplier = multiplier;
-    }
-    function changeColorPalette(palette) {
-      const root = document.documentElement;
-      switch(palette) {
-        case 'blue-yellow':
-          root.style.setProperty('--bg-color', '#000080');
-          root.style.setProperty('--text-color', '#FFFF00');
-          root.style.setProperty('--accent-color', '#FFFF00');
-          root.style.setProperty('--secondary-bg', '#000040');
-          root.style.setProperty('--button-bg', '#000060');
-          root.style.setProperty('--button-hover-bg', '#0000A0');
-          break;
-        case 'white-black':
-          root.style.setProperty('--bg-color', 'white');
-          root.style.setProperty('--text-color', 'black');
-          root.style.setProperty('--accent-color', '#333333');
-          root.style.setProperty('--secondary-bg', '#F0F0F0');
-          root.style.setProperty('--button-bg', '#E0E0E0');
-          root.style.setProperty('--button-hover-bg', '#D0D0D0');
-          break;
-        case 'high-contrast':
-          root.style.setProperty('--bg-color', 'black');
-          root.style.setProperty('--text-color', 'white');
-          root.style.setProperty('--accent-color', 'white');
-          root.style.setProperty('--secondary-bg', '#333333');
-          root.style.setProperty('--button-bg', '#666666');
-          root.style.setProperty('--button-hover-bg', '#888888');
-          break;
-        case 'default': default:
-          root.style.setProperty('--bg-color', 'black');
-          root.style.setProperty('--text-color', '#00ff00');
-          root.style.setProperty('--accent-color', '#00ff00');
-          root.style.setProperty('--secondary-bg', '#003300');
-          root.style.setProperty('--button-bg', '#330000');
-          root.style.setProperty('--button-hover-bg', '#550000');
-          break;
-      }
-      gameData.colorPalette = palette;
-    }
-    function updateUI() {
-      const t = translations[currentLanguage];
-      const baseXP = getBaseXP(level);
-      
-      document.getElementById('levelDisplay').textContent = `${t.level}: ${level}`;
-      document.getElementById('xpDisplay').textContent = `XP: ${Math.floor(xp)} / ${baseXP}`;
-      document.getElementById('xpLeftDisplay').textContent = `${t.xpLeft}: ${Math.max(0, Math.floor(baseXP - xp))}`;
-      document.getElementById('upgradeDisplay').textContent = `${t.multiplier}: ${multiplier}x`;
-      document.getElementById('upgradeBtn').textContent = `${t.upgrade} (${t.upgradeCost})`;
-      
-      const xpPercent = Math.min((xp / baseXP) * 100, 100);
-      const xpFill = document.getElementById('xp-fill');
-      xpFill.style.width = `${xpPercent}%`;
-      if (xpPercent >= 100) xpFill.classList.add('full');
-      else xpFill.classList.remove('full');
-    }
-
-    // Anti-AutoClicker: Pandemonium detection
-    let levelsThisMinute = 0, minuteStartTime = Date.now();
-    let lastClickTimes = [];
-    const PAND_DETECTION_LEVELS = 50, PAND_DETECTION_CLICKS = 20;
+    // Game logic
     let fightAllowed = true;
+    let clickTimes = [];
+    let levelsThisMin = 0;
+    let minStart = Date.now();
 
-    function fight(event) {
+    const fight = () => {
       if (!fightAllowed || pandActive) return;
+      
       const now = Date.now();
-      lastClickTimes.push(now);
-      if (lastClickTimes.length > PAND_DETECTION_CLICKS) lastClickTimes.shift();
-      if (now - minuteStartTime > 60000) {
-        levelsThisMinute = 0;
-        minuteStartTime = now;
+      clickTimes.push(now);
+      if (clickTimes.length > 20) clickTimes.shift();
+      
+      if (now - minStart > 60000) {
+        levelsThisMin = 0;
+        minStart = now;
       }
-      const baseXP = getBaseXP(level);
-      const xpGains = [20,25,30,35,40,45,50];
-      const baseGain = xpGains[Math.floor(Math.random() * xpGains.length)];
-      const gained = baseGain * multiplier;
-      let initialLevel = level;
-      xp += gained;
-      while (xp >= getBaseXP(level)) {
-        xp -= getBaseXP(level);
-        level++;
+      
+      const baseXP = getBaseXP(game.level);
+      const gain = (20 + Math.random() * 30) * game.mult;
+      const oldLevel = game.level;
+      
+      game.xp += gain;
+      while (game.xp >= getBaseXP(game.level)) {
+        game.xp -= getBaseXP(game.level);
+        game.level++;
       }
-      saveGame();
+      
+      save();
       updateUI();
-      if (level > initialLevel) levelsThisMinute += (level - initialLevel);
-      if (levelsThisMinute >= PAND_DETECTION_LEVELS && lastClickTimes.length === PAND_DETECTION_CLICKS) {
-        let intervals = lastClickTimes.slice(1).map((t,i)=>t-lastClickTimes[i]);
-        let avg = intervals.reduce((a,b)=>a+b,0)/intervals.length;
-        let consistent = intervals.every(intv => Math.abs(intv - avg) < 10);
-        if (consistent) {
-          triggerPandemonium();
-          levelsThisMinute = 0;
+      
+      levelsThisMin += game.level - oldLevel;
+      
+      // Anti-cheat check
+      if (levelsThisMin >= 50 && clickTimes.length === 20) {
+        const intervals = clickTimes.slice(1).map((time, i) => time - clickTimes[i]);
+        const avg = intervals.reduce((a, b) => a + b) / intervals.length;
+        if (intervals.every(int => Math.abs(int - avg) < 10)) {
+          startPandemonium();
+          levelsThisMin = 0;
           fightAllowed = false;
-          return;
         }
       }
-    }
-    function upgrade() {
+    };
+
+    const upgrade = () => {
       if (pandActive) return;
-      const t = translations[currentLanguage];
-      if (level >= 3) {
-        level -= 2;
-        multiplier++;
-        const baseXP = getBaseXP(level);
-        if (xp > baseXP) xp = baseXP;
-        saveGame();
+      if (game.level >= 3) {
+        game.level -= 2;
+        game.mult++;
+        if (game.xp > getBaseXP(game.level)) game.xp = getBaseXP(game.level);
+        save();
         updateUI();
       } else {
-        alert(t.needLevels);
+        alert(t[game.lang].needLevels);
       }
-    }
-    function clearData() {
-      const t = translations[currentLanguage];
-      if (confirm(t.confirmClear)) {
-        // Reset all data
-        xp = 0; level = 1; multiplier = 1; currentLanguage = 'en';
-        gameData = { xp: 0, level: 1, multiplier: 1, colorPalette: 'default' };
+    };
+
+    const clearData = () => {
+      if (confirm(t[game.lang].confirmClear)) {
+        game = { xp: 0, level: 1, mult: 1, theme: 'default', lang: 'en' };
+        window.xpsfSave = null;
         document.getElementById('colorPalette').value = 'default';
         document.getElementById('languageSelect').value = 'en';
-        changeColorPalette('default');
-        updateLanguage();
+        setTheme('default');
+        updateUI();
+        save();
       }
-    }
-    document.getElementById('fightBtn').addEventListener('click', fight);
-    document.getElementById('upgradeBtn').addEventListener('click', upgrade);
-    document.getElementById('clearDataBtn').addEventListener('click', clearData);
-    
-    // Make sure UI updates after everything is loaded
-    window.addEventListener('load', function() {
-      updateUI();
-    });
+    };
 
-    // --------- Pandemonium: Fullscreen Ball Minigame (dynamic play area, 42s, bar/text tracked to ring) ---------
-    let pandBarVal = 1, pandBarDrain = 0.017, pandBarFill = 0.027, pandDuration = 42, pandElapsed = 0;
-    let pandInterval = null, pandThrowInterval = null, shakeloop = null;
-    let ballX = 0, ballY = 0, shakeTime = 0, shakePhaseX = Math.random()*100, shakePhaseY = Math.random()*100;
+    // Pandemonium minigame
     let pandActive = false;
-    const ballRadius = 20, ringRadius = 80; // center ring 160px diameter
+    let pandBar = 1, pandTime = 0;
+    let ballX = 0, ballY = 0;
+    let pandInt, throwInt, shakeFrame;
+    const ballR = 20, ringR = 80;
 
-    function triggerPandemonium() {
-      const t = translations[currentLanguage];
-      pandActive = true; pandBarVal = 1; pandElapsed = 0;
-      centerRingAndElements();
-      centerBall();
+    const startPandemonium = () => {
+      pandActive = true;
+      pandBar = 1;
+      pandTime = 0;
+      
+      const cx = innerWidth / 2, cy = innerHeight / 2;
+      ballX = cx; ballY = cy;
+      
+      const ring = document.getElementById('pandCenterRing');
+      ring.style.width = ring.style.height = ringR * 2 + 'px';
+      ring.style.left = cx - ringR + 'px';
+      ring.style.top = cy - ringR + 'px';
+      
+      const status = document.getElementById('pandStatus');
+      status.style.left = cx - 200 + 'px';
+      status.style.top = cy - ringR - 75 + 'px';
+      status.style.width = '400px';
+      status.textContent = t[game.lang].pandKeep;
+      
+      const barCont = document.getElementById('pandBarContainer');
+      barCont.style.left = cx - 160 + 'px';
+      barCont.style.top = cy + ringR + 40 + 'px';
+      barCont.style.width = '320px';
+      
       document.getElementById('pandemoniumOverlay').style.display = 'flex';
-      updateBall();
-      document.getElementById('pandStatus').textContent = t.pandKeepInside;
-      document.getElementById('pandStartBtn').textContent = t.pandStart;
       document.getElementById('pandStartBtn').style.display = 'block';
-      document.getElementById('pandStartBtn').onclick = function() {
+      document.getElementById('pandStartBtn').onclick = () => {
         document.getElementById('pandStartBtn').style.display = 'none';
-        let gameBox = document.getElementById('pandGameBox');
-        gameBox.requestPointerLock = gameBox.requestPointerLock || gameBox.mozRequestPointerLock;
-        gameBox.requestPointerLock();
+        document.getElementById('pandGameBox').requestPointerLock();
       };
-      window.addEventListener("resize", centerRingAndElements);
-    }
+    };
 
-    document.addEventListener('pointerlockchange', pointerLockChange, false);
-    document.addEventListener('mozpointerlockchange', pointerLockChange, false);
+    const updateBall = () => {
+      const ball = document.getElementById('pandCursorBall');
+      ball.style.left = ballX - ballR + 'px';
+      ball.style.top = ballY - ballR + 'px';
+    };
 
-    function pointerLockChange() {
-      let locked = document.pointerLockElement === document.getElementById('pandGameBox') ||
-          document.mozPointerLockElement === document.getElementById('pandGameBox');
-      if (locked && pandActive) startPandemoniumCore();
-    }
+    const pandTick = () => {
+      const dx = ballX - innerWidth / 2;
+      const dy = ballY - innerHeight / 2;
+      const inRing = Math.sqrt(dx * dx + dy * dy) <= ringR;
+      
+      if (inRing) {
+        pandBar = Math.min(1, pandBar + 0.025);
+        pandTime += 0.04;
+      } else {
+        pandBar = Math.max(0, pandBar - 0.015);
+      }
+      
+      document.getElementById('pandBar').style.width = pandBar * 100 + '%';
+      
+      if (pandTime >= 42) endPandemonium(true);
+      if (pandBar <= 0) endPandemonium(false);
+    };
 
-    function centerRingAndElements() {
-      const cx = window.innerWidth/2, cy = window.innerHeight/2;
-      const d  = ringRadius*2;
+    const throwBall = () => {
+      const cx = innerWidth / 2, cy = innerHeight / 2;
+      const angle = Math.random() * Math.PI * 2;
+      const dist = ringR + 100 + Math.random() * 200;
+      ballX = Math.max(ballR, Math.min(innerWidth - ballR, cx + Math.cos(angle) * dist));
+      ballY = Math.max(ballR, Math.min(innerHeight - ballR, cy + Math.sin(angle) * dist));
+    };
 
-      // Center the ring
-      let ring = document.getElementById('pandCenterRing');
-      ring.style.width = d+'px';
-      ring.style.height = d+'px';
-      ring.style.left = (cx - ringRadius)+'px';
-      ring.style.top  = (cy - ringRadius)+'px';
-
-      // Status text
-      let status = document.getElementById('pandStatus');
-      status.style.left = (cx-200)+'px';
-      status.style.top = (cy - ringRadius - 75) + 'px';
-
-      // XP bar
-      let bar = document.getElementById('pandBarContainer');
-      bar.style.left = (cx-160)+'px';
-      bar.style.top = (cy + ringRadius + 40) + 'px';
-      bar.style.width = '320px';
-    }
-
-    function centerBall() {
-      ballX = window.innerWidth/2;
-      ballY = window.innerHeight/2;
-    }
-    function startPandemoniumCore() {
-      document.body.style.cursor = 'none';
-      shakeTime = 0;
-      shakeloop = requestAnimationFrame(ballSmoothShake);
-      pandThrowInterval = setInterval(pandThrowBall, 5000);
-      pandInterval = setInterval(pandBallTick, 40);
-      window.addEventListener("mousemove", moveBallByMouse, false);
-      // Play audio on a user gesture
-      let a = document.getElementById('pandAudio');
-      a.currentTime = 0;
-      a.play().catch(()=>{});
-    }
-    function endPandemoniumCore(win) {
-      const t = translations[currentLanguage];
-      clearInterval(pandInterval); clearInterval(pandThrowInterval); cancelAnimationFrame(shakeloop);
-      window.removeEventListener("mousemove", moveBallByMouse);
-      window.removeEventListener("resize", centerRingAndElements);
+    const endPandemonium = (win) => {
+      pandActive = false;
+      clearInterval(pandInt);
+      clearInterval(throwInt);
+      cancelAnimationFrame(shakeFrame);
+      
+      document.exitPointerLock?.();
       document.body.style.cursor = '';
-      document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock;
-      try { document.exitPointerLock(); } catch(e) {}
-      // Stop/rewind audio
-      let a = document.getElementById('pandAudio'); a.pause(); a.currentTime = 0;
-      let status = document.getElementById('pandStatus');
-      if (win) status.textContent = t.pandSurvived;
-      else status.textContent = t.pandFailed;
-      document.getElementById('pandemoniumOverlay').onclick = function() {
+      
+      const audio = document.getElementById('pandAudio');
+      audio.pause();
+      audio.currentTime = 0;
+      
+      document.getElementById('pandStatus').textContent = win ? t[game.lang].pandWin : t[game.lang].pandFail;
+      
+      document.getElementById('pandemoniumOverlay').onclick = () => {
         document.getElementById('pandemoniumOverlay').style.display = 'none';
         document.getElementById('pandemoniumOverlay').onclick = null;
         fightAllowed = true;
-        if (!win) triggerPandemonium();
+        if (!win) startPandemonium();
+      };
+    };
+
+    // Event listeners
+    document.getElementById('fightBtn').onclick = fight;
+    document.getElementById('upgradeBtn').onclick = upgrade;
+    document.getElementById('clearDataBtn').onclick = clearData;
+    document.getElementById('colorPalette').onchange = e => setTheme(e.target.value);
+    document.getElementById('languageSelect').onchange = e => {
+      game.lang = e.target.value;
+      updateUI();
+      save();
+    };
+
+    // Pointer lock events
+    document.onpointerlockchange = () => {
+      if (document.pointerLockElement && pandActive) {
+        document.body.style.cursor = 'none';
+        pandInt = setInterval(pandTick, 40);
+        throwInt = setInterval(throwBall, 5000);
+        
+        const shake = () => {
+          if (!pandActive) return;
+          const t = performance.now() * 0.01;
+          const x = Math.sin(t) * 3 + Math.sin(t * 1.3) * 2;
+          const y = Math.cos(t * 1.1) * 3 + Math.cos(t * 0.9) * 2;
+          const ball = document.getElementById('pandCursorBall');
+          ball.style.left = ballX - ballR + x + 'px';
+          ball.style.top = ballY - ballR + y + 'px';
+          shakeFrame = requestAnimationFrame(shake);
+        };
+        shake();
+        
+        document.onmousemove = e => {
+          if (!pandActive) return;
+          ballX = Math.max(ballR, Math.min(innerWidth - ballR, ballX + e.movementX));
+          ballY = Math.max(ballR, Math.min(innerHeight - ballR, ballY + e.movementY));
+        };
+        
+        document.getElementById('pandAudio').play().catch(() => {});
       }
-    }
-    function moveBallByMouse(e) {
-      if (!pandActive) return;
-      ballX += e.movementX;
-      ballY += e.movementY;
-      // Ball must stay fully onscreen
-      ballX = Math.max(ballRadius, Math.min(window.innerWidth-ballRadius, ballX));
-      ballY = Math.max(ballRadius, Math.min(window.innerHeight-ballRadius, ballY));
-    }
-    function updateBall() {
-      let el = document.getElementById('pandCursorBall');
-      el.style.left = (ballX-ballRadius) + 'px';
-      el.style.top = (ballY-ballRadius) + 'px';
-    }
-    function ballSmoothShake() {
-      shakeTime += 0.04;
-      let maxShake = 5;
-      let shakeX = Math.sin(shakePhaseX + shakeTime*0.8)*maxShake + Math.sin(shakePhaseY + shakeTime*1.3)*maxShake*0.6;
-      let shakeY = Math.cos(shakePhaseY + shakeTime*0.85)*maxShake + Math.cos(shakePhaseX + shakeTime*1.11)*maxShake*0.5;
-      let el = document.getElementById('pandCursorBall');
-      el.style.left = (ballX-ballRadius+shakeX)+'px';
-      el.style.top = (ballY-ballRadius+shakeY)+'px';
-      if (pandActive) shakeloop = requestAnimationFrame(ballSmoothShake);
-    }
-    function pandBallTick() {
-      let dx = ballX - window.innerWidth/2, dy = ballY - window.innerHeight/2;
-      let inRing = Math.sqrt(dx*dx+dy*dy) <= ringRadius;
-      if (inRing) {
-        pandBarVal = Math.min(1, pandBarVal + pandBarFill);
-        pandElapsed += 0.04;
-      } else {
-        pandBarVal = Math.max(0, pandBarVal - pandBarDrain);
+    };
+
+    // Initialize
+    onload = () => {
+      const loaded = load();
+      if (loaded) {
+        document.getElementById('colorPalette').value = game.theme;
+        document.getElementById('languageSelect').value = game.lang;
+        setTheme(game.theme);
       }
-      document.getElementById('pandBar').style.width = (pandBarVal*100) + "%";
-      if (pandElapsed >= pandDuration) endPandemoniumCore(true);
-      if (pandBarVal <= 0) endPandemoniumCore(false);
-    }
-    function pandThrowBall() {
-      // Knock anywhere onscreen (at least 50px from center, inside bounds)
-      let cx = window.innerWidth/2, cy = window.innerHeight/2;
-      let minDist = ringRadius + 50,
-          maxDist = Math.min(cx, cy) - ballRadius - 10;
-      if (maxDist < minDist+1) maxDist = minDist+1;
-      let angle = Math.random()*Math.PI*2;
-      let r = minDist + Math.random() * (maxDist-minDist);
-      let tryX = cx + Math.cos(angle)*r;
-      let tryY = cy + Math.sin(angle)*r;
-      // Clamp to window bounds
-      tryX = Math.max(ballRadius, Math.min(window.innerWidth-ballRadius, tryX));
-      tryY = Math.max(ballRadius, Math.min(window.innerHeight-ballRadius, tryY));
-      ballX = tryX;
-      ballY = tryY;
-    }
+      updateUI();
+      if (!loaded) save();
+    };
+
+    // Auto-save
+    setInterval(save, 30000);
+    onbeforeunload = save;
   </script>
 </body>
 </html>
